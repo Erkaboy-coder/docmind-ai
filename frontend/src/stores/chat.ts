@@ -40,6 +40,21 @@ export const useChatStore = defineStore('chat', () => {
     return data
   }
 
+  async function openOrCreateChat(documentId: number) {
+    await fetchChats(documentId)
+
+    if (chats.value.length > 0) {
+      return chats.value[0]
+    }
+
+    return await createChat(documentId)
+  }
+
+  async function deleteChat(chatId: number) {
+    await apiClient.delete(`/chats/${chatId}`)
+    chats.value = chats.value.filter((chat) => chat.id !== chatId)
+  }
+
   async function fetchMessages(chatId: number) {
     isLoadingMessages.value = true
 
@@ -87,6 +102,8 @@ export const useChatStore = defineStore('chat', () => {
     isSending,
     fetchChats,
     createChat,
+    openOrCreateChat,
+    deleteChat,
     fetchMessages,
     sendMessage,
   }

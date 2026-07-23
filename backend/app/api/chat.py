@@ -95,3 +95,20 @@ def send_message(
         chat=chat,
         content=data.content
     )
+
+
+@router.delete(
+    "/chats/{chat_id}",
+    status_code=204
+)
+def delete_chat(
+    chat_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    chat = service.chat_repository.get_by_id(db, chat_id)
+
+    if chat is None or chat.user_id != current_user.id:
+        raise HTTPException(status_code=404, detail="Suhbat topilmadi")
+
+    service.delete_chat(db=db, chat=chat)

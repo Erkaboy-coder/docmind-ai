@@ -38,10 +38,16 @@ export const useDocumentStore = defineStore('documents', () => {
     return data
   }
 
+  async function deleteDocument(documentId: number) {
+    await apiClient.delete(`/documents/${documentId}`)
+    documents.value = documents.value.filter((doc) => doc.id !== documentId)
+  }
+
   return {
     documents,
     isLoading,
     fetchDocuments,
     uploadDocument,
+    deleteDocument,
   }
 })

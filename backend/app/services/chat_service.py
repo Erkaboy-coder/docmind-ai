@@ -25,6 +25,9 @@ class ChatService:
     def list_chats(self, db: Session, document_id: int) -> list[Chat]:
         return self.chat_repository.get_all_by_document(db, document_id)
 
+    def delete_chat(self, db: Session, chat: Chat) -> None:
+        self.chat_repository.delete(db, chat)
+
     def get_messages(self, db: Session, chat_id: int) -> list[Message]:
         return self.message_repository.get_all_by_chat(db, chat_id)
 

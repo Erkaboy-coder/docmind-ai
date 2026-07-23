@@ -28,3 +28,7 @@ class ChatRepository:
         db.commit()
         db.refresh(chat)
         return chat
+
+    def delete(self, db: Session, chat: Chat) -> None:
+        db.delete(chat)
+        db.commit()

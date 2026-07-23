@@ -14,6 +14,8 @@ const chatId = computed(() => Number(route.params.chatId))
 const messagesEnd = ref<HTMLElement | null>(null)
 const draft = ref('')
 const error = ref('')
+const isCreatingChat = ref(false)
+const deletingChatId = ref<number | null>(null)
 
 async function loadChat() {
   await store.fetchMessages(chatId.value)
@@ -33,8 +35,42 @@ onMounted(async () => {
 watch(chatId, loadChat)
 
 async function handleNewChat() {
-  const chat = await store.createChat(documentId.value)
-  router.push({ name: 'chat', params: { documentId: documentId.value, chatId: chat.id } })
+  if (isCreatingChat.value) {
+    return
+  }
+
+  isCreatingChat.value = true
+
+  try {
+    const chat = await store.createChat(documentId.value)
+    router.push({ name: 'chat', params: { documentId: documentId.value, chatId: chat.id } })
+  } finally {
+    isCreatingChat.value = false
+  }
+}
+
+async function handleDeleteChat(id: number) {
+  if (!confirm("Bu suhbatni o'chirmoqchimisiz?")) {
+    return
+  }
+
+  deletingChatId.value = id
+
+  try {
+    await store.deleteChat(id)
+
+    if (id === chatId.value) {
+      const next = store.chats[0]
+
+      if (next) {
+        router.push({ name: 'chat', params: { documentId: documentId.value, chatId: next.id } })
+      } else {
+        router.push({ name: 'documents' })
+      }
+    }
+  } finally {
+    deletingChatId.value = null
+  }
 }
 
 async function handleSend() {
@@ -66,23 +102,38 @@ async function handleSend() {
       <aside class="flex w-64 flex-col border-r border-gray-200 bg-white">
         <div class="p-3">
           <button
-            class="w-full rounded-lg bg-purple-600 px-3 py-2 text-sm font-medium text-white transition hover:bg-purple-700"
+            :disabled="isCreatingChat"
+            class="w-full rounded-lg bg-purple-600 px-3 py-2 text-sm font-medium text-white transition hover:bg-purple-700 disabled:opacity-50"
             @click="handleNewChat"
           >
-            + Yangi suhbat
+            {{ isCreatingChat ? 'Ochilmoqda...' : '+ Yangi suhbat' }}
           </button>
         </div>
 
         <nav class="flex-1 overflow-y-auto px-2 pb-2">
-          <RouterLink
+          <div
             v-for="chat in store.chats"
             :key="chat.id"
-            :to="{ name: 'chat', params: { documentId, chatId: chat.id } }"
-            class="block truncate rounded-lg px-3 py-2 text-sm text-gray-600 hover:bg-gray-100"
-            active-class="bg-purple-50 text-purple-700 font-medium"
+            class="group flex items-center rounded-lg hover:bg-gray-100"
           >
-            {{ chat.title }}
-          </RouterLink>
+            <RouterLink
+              :to="{ name: 'chat', params: { documentId, chatId: chat.id } }"
+              class="flex-1 truncate px-3 py-2 text-sm text-gray-600"
+              active-class="!text-purple-700 font-medium"
+            >
+              {{ chat.title }}
+            </RouterLink>
+            <button
+              :disabled="deletingChatId === chat.id"
+              class="mr-1 shrink-0 rounded p-1 text-gray-300 opacity-0 transition hover:bg-red-50 hover:text-red-600 disabled:opacity-50 group-hover:opacity-100"
+              aria-label="Suhbatni o'chirish"
+              @click="handleDeleteChat(chat.id)"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="h-3.5 w-3.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
+              </svg>
+            </button>
+          </div>
         </nav>
       </aside>
 

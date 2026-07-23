@@ -105,3 +105,7 @@ class DocumentService:
             db=db,
             user_id=user.id
         )
+
+    def delete_document(self, db: Session, document: Document) -> None:
+        Path(document.file_path).unlink(missing_ok=True)
+        self.repository.delete(db, document)
