@@ -7,12 +7,11 @@ AI-powered document assistant — foydalanuvchi PDF/DOCX/TXT hujjatlarni yuklayd
 Loyiha faol ishlab chiqilmoqda. Hozirgi bosqich:
 
 - [x] Auth: ro'yxatdan o'tish, login, JWT autentifikatsiya, `/me`
-- [x] Chat/Message modellari (ma'lumotlar bazasi darajasida)
 - [x] Hujjat yuklash (PDF/DOCX/TXT) + matn ajratish
 - [x] Alembic migratsiyalari
 - [x] Vue 3 frontend (login/register/dashboard/hujjatlar)
-- [ ] AI/RAG integratsiyasi (embedding, vector search, Q&A)
-- [ ] Chat UI va tarix
+- [x] AI/RAG integratsiyasi (chunking, embedding, vector qidiruv, Q&A — Ollama + sentence-transformers)
+- [x] Chat UI va tarix (hujjat bo'yicha bir nechta suhbat, xabarlar saqlanadi)
 - [ ] Docker / production deploy
 
 ## Texnologiyalar
@@ -21,30 +20,31 @@ Loyiha faol ishlab chiqilmoqda. Hozirgi bosqich:
 
 **Frontend:** Vue 3, TypeScript, Pinia, Vue Router, Axios, TailwindCSS
 
-**AI (rejalashtirilgan):** LangChain / LlamaIndex, OpenAI API yoki lokal LLM (Ollama), Sentence Transformers, pgvector
+**AI:** Ollama (lokal LLM, standart model — `llama3.2`), Sentence Transformers (embedding), oddiy Postgres JSON ustunida saqlangan vektorlar + Python'da cosine similarity (pgvector emas — Windows'da o'rnatish qiyinligi sababli hozircha shunday)
 
 ## Loyiha strukturasi
 
 ```
 docmind-ai/
 ├── backend/
-│   ├── alembic/             # DB migratsiyalari
+│   ├── alembic/               # DB migratsiyalari
 │   └── app/
-│       ├── api/              # HTTP endpointlar (FastAPI routerlar)
-│       ├── services/         # Biznes logika
-│       ├── repositories/     # Ma'lumotlar bazasi bilan ishlash
-│       ├── models/           # SQLAlchemy modellar
-│       ├── schemas/          # Pydantic sxemalar (request/response)
-│       ├── utils/            # Yordamchi funksiyalar (JWT, hash, matn ajratish)
-│       ├── core/              # Konfiguratsiya
-│       └── db/                # DB session
+│       ├── ai/                # Chunking, embedding, Ollama client, cosine similarity
+│       ├── api/                # HTTP endpointlar (FastAPI routerlar)
+│       ├── services/           # Biznes logika (shu jumladan QAService, ChatService)
+│       ├── repositories/       # Ma'lumotlar bazasi bilan ishlash
+│       ├── models/             # SQLAlchemy modellar
+│       ├── schemas/            # Pydantic sxemalar (request/response)
+│       ├── utils/              # Yordamchi funksiyalar (JWT, hash, matn ajratish)
+│       ├── core/                # Konfiguratsiya
+│       └── db/                  # DB session
 └── frontend/
     └── src/
-        ├── api/              # Axios client
-        ├── components/       # Qayta ishlatiladigan komponentlar
-        ├── pages/            # Sahifalar (Login/Register/Dashboard/Documents)
-        ├── router/           # Vue Router + auth guard
-        └── stores/           # Pinia store'lar (auth, documents)
+        ├── api/                # Axios client
+        ├── components/         # Qayta ishlatiladigan komponentlar (AppHeader, PasswordInput)
+        ├── pages/              # Sahifalar (Login/Register/Dashboard/Documents/Chat)
+        ├── router/             # Vue Router + auth guard
+        └── stores/             # Pinia store'lar (auth, documents, chat)
 ```
 
 ## Ishga tushirish (backend)
@@ -71,6 +71,16 @@ API hujjatlari `http://localhost:8000/docs` manzilida ochiladi. Modelga o'zgarti
 alembic revision --autogenerate -m "tavsif"
 alembic upgrade head
 ```
+
+## AI (Ollama) sozlash
+
+Hujjat bo'yicha savol-javob ishlashi uchun [Ollama](https://ollama.com) kompyuteringizda o'rnatilgan va ishlab turishi kerak:
+
+```bash
+ollama pull llama3.2
+```
+
+Boshqa model ishlatmoqchi bo'lsangiz, `.env`dagi `OLLAMA_MODEL`ni o'zgartiring (masalan o'zbek tilida sifatliroq javoblar uchun `qwen2.5`).
 
 ## Ishga tushirish (frontend)
 
