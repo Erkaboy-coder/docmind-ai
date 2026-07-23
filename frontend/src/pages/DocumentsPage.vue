@@ -1,11 +1,29 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
+import { useRouter } from 'vue-router'
 import { useDocumentStore } from '@/stores/documents'
+import { useChatStore } from '@/stores/chat'
 import AppHeader from '@/components/AppHeader.vue'
 
+const router = useRouter()
 const store = useDocumentStore()
+const chatStore = useChatStore()
 const isUploading = ref(false)
+const startingChatFor = ref<number | null>(null)
 const error = ref('')
+
+async function handleStartChat(documentId: number) {
+  startingChatFor.value = documentId
+
+  try {
+    const chat = await chatStore.createChat(documentId)
+    router.push({ name: 'chat', params: { documentId, chatId: chat.id } })
+  } catch {
+    error.value = 'Suhbat boshlashda xatolik yuz berdi'
+  } finally {
+    startingChatFor.value = null
+  }
+}
 
 onMounted(() => {
   store.fetchDocuments()
@@ -91,9 +109,19 @@ const statusClasses: Record<string, string> = {
             <p class="text-sm font-medium text-gray-900">{{ doc.filename }}</p>
             <p class="text-xs uppercase text-gray-400">{{ doc.file_type }}</p>
           </div>
-          <span :class="['rounded-full px-2.5 py-0.5 text-xs font-medium', statusClasses[doc.status]]">
-            {{ statusLabels[doc.status] ?? doc.status }}
-          </span>
+          <div class="flex items-center gap-3">
+            <span :class="['rounded-full px-2.5 py-0.5 text-xs font-medium', statusClasses[doc.status]]">
+              {{ statusLabels[doc.status] ?? doc.status }}
+            </span>
+            <button
+              v-if="doc.status === 'ready'"
+              :disabled="startingChatFor === doc.id"
+              class="rounded-lg bg-purple-600 px-3 py-1.5 text-xs font-medium text-white transition hover:bg-purple-700 disabled:opacity-50"
+              @click="handleStartChat(doc.id)"
+            >
+              {{ startingChatFor === doc.id ? 'Ochilmoqda...' : 'Suhbat boshlash' }}
+            </button>
+          </div>
         </li>
       </ul>
     </main>

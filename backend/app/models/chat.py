@@ -24,6 +24,10 @@ class Chat(Base):
         ForeignKey("users.id")
     )
 
+    document_id: Mapped[int] = mapped_column(
+        ForeignKey("documents.id")
+    )
+
     created_at: Mapped[datetime] = mapped_column(
         DateTime,
         default=datetime.utcnow
@@ -31,6 +35,11 @@ class Chat(Base):
 
     user = relationship(
         "User",
+        back_populates="chats"
+    )
+
+    document = relationship(
+        "Document",
         back_populates="chats"
     )
 

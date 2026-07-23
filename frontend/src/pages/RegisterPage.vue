@@ -2,6 +2,7 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
+import PasswordInput from '@/components/PasswordInput.vue'
 
 const router = useRouter()
 const auth = useAuthStore()
@@ -46,6 +47,7 @@ async function handleSubmit(event: Event) {
             name="fullName"
             type="text"
             autocomplete="name"
+            placeholder="Ism Familiya"
             required
             minlength="3"
             class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500"
@@ -59,6 +61,7 @@ async function handleSubmit(event: Event) {
             name="email"
             type="email"
             autocomplete="email"
+            placeholder="email@example.com"
             required
             class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500"
           />
@@ -66,14 +69,13 @@ async function handleSubmit(event: Event) {
 
         <div>
           <label class="mb-1 block text-sm font-medium text-gray-700" for="password">Parol</label>
-          <input
+          <PasswordInput
             id="password"
             name="password"
-            type="password"
             autocomplete="new-password"
+            placeholder="Kamida 8 ta belgi"
             required
-            minlength="8"
-            class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500"
+            :minlength="8"
           />
         </div>
 
@@ -89,7 +91,7 @@ async function handleSubmit(event: Event) {
       </form>
 
       <p class="text-center text-sm text-gray-500">
-        Hisobingiz bormi?
+        Akkauntingiz bormi?
         <RouterLink to="/login" class="font-medium text-purple-600 hover:underline">Kiring</RouterLink>
       </p>
     </div>
