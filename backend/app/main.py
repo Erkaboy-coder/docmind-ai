@@ -1,9 +1,9 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.router import router
-from app.db.session import Base, engine
 
-import app.models
+import app.models  # noqa: F401 -- registers all models so relationships resolve
 
 app = FastAPI(
     title="DocMind AI",
@@ -11,10 +11,13 @@ app = FastAPI(
     version="0.1.0"
 )
 
-
-@app.on_event("startup")
-def startup():
-    Base.metadata.create_all(bind=engine)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 app.include_router(router)

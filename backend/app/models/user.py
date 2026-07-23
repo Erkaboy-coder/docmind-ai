@@ -23,6 +23,12 @@ class User(Base):
         back_populates="user",
         cascade="all, delete"
     )
+
+    documents = relationship(
+        "Document",
+        back_populates="owner",
+        cascade="all, delete"
+    )
     hashed_password: Mapped[str] = mapped_column(
         String(255)
     )
